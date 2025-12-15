@@ -15,7 +15,7 @@ const RootLayout = ({
 }>) => {
     return (
         <html lang="en">
-            <body>
+            <body className='font-sans antialiased'>
                 {children}
             </body>
         </html>
