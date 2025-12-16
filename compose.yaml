@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   app:
     build: .
@@ -14,11 +12,26 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      app-migration:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - tr.im
+
+  app-migration:
+    build:
+      context: .
+      target: builder
+    command: bunx drizzle-kit migrate
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - tr.im
 
