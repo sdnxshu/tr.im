@@ -1,8 +1,33 @@
-import { integer, pgTable, varchar } from "drizzle-orm/pg-core";
+import {
+    pgTable,
+    uuid,
+    text,
+    varchar,
+    timestamp,
+    boolean,
+    index,
+} from "drizzle-orm/pg-core";
 
-export const usersTable = pgTable("users", {
-    id: integer().primaryKey().generatedAlwaysAsIdentity(),
-    name: varchar({ length: 255 }).notNull(),
-    age: integer().notNull(),
-    email: varchar({ length: 255 }).notNull().unique(),
-});
+const urls = pgTable(
+    "urls",
+    {
+        id: uuid("id").defaultRandom().primaryKey(),
+
+        shortCode: varchar("short_code", { length: 6 }).notNull().unique(),
+
+        originalUrl: text("original_url").notNull(),
+
+        isActive: boolean("is_active").default(true).notNull(),
+
+        expiresAt: timestamp("expires_at", { withTimezone: true }),
+
+        createdAt: timestamp("created_at", { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+    },
+    (table) => [
+        index("urls_shortcode_idx").on(table.shortCode),
+    ]
+);
+
+export { urls };
