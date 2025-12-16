@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { ArrowDown } from "lucide-react"
 
 type Props = {
-    onShorten: () => void
+    onShorten: (data: { shortUrl: string; shortCode: string; id: number }) => void
 }
 
 const UrlShortener = ({ onShorten }: Props) => {
@@ -28,7 +28,7 @@ const UrlShortener = ({ onShorten }: Props) => {
 
             try {
 
-                await fetch(
+                const response = await fetch(
                     "/api/shorten",
                     {
                         method: "POST",
@@ -37,7 +37,22 @@ const UrlShortener = ({ onShorten }: Props) => {
                     }
                 )
 
-            } catch (error) { toast.error("error") }
+                if (!response.ok) {
+                    toast.error("Failed to shorten URL")
+                    return
+                }
+
+                const data = await response.json()
+
+                // Pass the shortened URL data to parent
+                onShorten(data)
+
+                // Reset form
+                formik.resetForm()
+
+            } catch (error) {
+                toast.error("Error shortening URL")
+            }
 
             finally { setSubmitting(false) }
 
@@ -73,10 +88,10 @@ const UrlShortener = ({ onShorten }: Props) => {
                     />
                     <button
                         type="submit"
-                        onClick={onShorten}
-                        className="w-full sm:w-auto px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-xl border-2 border-foreground/80 hover:bg-primary/90 transition-colors"
+                        disabled={formik.isSubmitting}
+                        className="w-full sm:w-auto px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-xl border-2 border-foreground/80 hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Shorten
+                        {formik.isSubmitting ? 'Shortening...' : 'Shorten'}
                     </button>
                 </div>
             </form>

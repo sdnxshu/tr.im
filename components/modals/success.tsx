@@ -2,7 +2,7 @@
 
 import React from 'react'
 
-import { X, QrCode, Copy } from "lucide-react"
+import { X, QrCode, Copy, Check } from "lucide-react"
 
 import { ShareButtons } from "@/components/buttons/share"
 
@@ -10,9 +10,22 @@ type Props = {
     isOpen: boolean
     onClose: () => void
     onQrClick: () => void
+    shortUrl: string
 }
 
-const SuccessModal = ({ isOpen, onClose, onQrClick }: Props) => {
+const SuccessModal = ({ isOpen, onClose, onQrClick, shortUrl }: Props) => {
+    const [copied, setCopied] = React.useState(false)
+
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(shortUrl)
+            setCopied(true)
+            setTimeout(() => setCopied(false), 2000)
+        } catch (error) {
+            console.error('Failed to copy:', error)
+        }
+    }
+
     if (!isOpen) return null
 
     return (
@@ -30,20 +43,25 @@ const SuccessModal = ({ isOpen, onClose, onQrClick }: Props) => {
                     <p className="mt-4 text-foreground/80">Copy your shortened URL and share</p>
 
                     <div className="mt-4 px-6 py-4 bg-muted rounded-xl border-2 border-foreground/20">
-                        <span className="text-foreground font-medium">hgb.ae/3erds</span>
+                        <span className="text-foreground font-medium break-all">{shortUrl || 'Generating...'}</span>
                     </div>
 
                     <div className="mt-4 flex justify-center gap-4">
                         <button
                             onClick={onQrClick}
-                            className="flex items-center gap-2 px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl border-2 border-foreground/80 hover:bg-primary/90 transition-colors"
+                            disabled={!shortUrl}
+                            className="flex items-center gap-2 px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl border-2 border-foreground/80 hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <QrCode className="w-5 h-5" />
                             QR
                         </button>
-                        <button className="flex items-center gap-2 px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl border-2 border-foreground/80 hover:bg-primary/90 transition-colors">
-                            <Copy className="w-5 h-5" />
-                            Copy
+                        <button
+                            onClick={handleCopy}
+                            disabled={!shortUrl}
+                            className="flex items-center gap-2 px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl border-2 border-foreground/80 hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                            {copied ? 'Copied!' : 'Copy'}
                         </button>
                     </div>
 
